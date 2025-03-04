@@ -6,7 +6,7 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"include": ["./src/**/*.ts"],
+		"include": ["./src/**/*.ts", "./langgraph-agent/**/*.ts"],
 		"ignoreUnknown": false,
 		"ignore": []
 	},
