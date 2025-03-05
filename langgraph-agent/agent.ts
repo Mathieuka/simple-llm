@@ -16,7 +16,6 @@ const agent = createReactAgent({
 	checkpointSaver: agentCheckpointer,
 });
 
-// Now it's time to use!
 const agentFinalState = await agent.invoke(
 	{ messages: [new HumanMessage("what is the current weather in sf")] },
 	{ configurable: { thread_id: "42" } },
