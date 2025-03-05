@@ -1,7 +1,12 @@
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { type AIMessage, HumanMessage } from "@langchain/core/messages";
-import { MessagesAnnotation, StateGraph } from "@langchain/langgraph";
+import {
+	MemorySaver,
+	MessagesAnnotation,
+	StateGraph,
+} from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
+
 import { ChatOpenAI } from "@langchain/openai";
 
 // Define the tools for the agent to use
@@ -26,7 +31,7 @@ function shouldContinue({ messages }: typeof MessagesAnnotation.State) {
 	// Otherwise, we stop (reply to the user) using the special "__end__" node
 	return "__end__";
 }
-
+const memorySaver = new MemorySaver();
 // Define the function that calls the model
 async function callModel(state: typeof MessagesAnnotation.State) {
 	const response = await model.invoke(state.messages);
@@ -44,17 +49,33 @@ const workflow = new StateGraph(MessagesAnnotation)
 	.addConditionalEdges("agent", shouldContinue);
 
 // Finally, we compile it into a LangChain Runnable.
-const app = workflow.compile();
+const app = workflow.compile({
+	checkpointer: memorySaver,
+});
 
 // Use the agent
-const finalState = await app.invoke({
-	messages: [new HumanMessage("what is the weather in sf")],
-});
+const finalState = await app.invoke(
+	{
+		messages: [new HumanMessage("what is the weather in sf")],
+	},
+	{
+		configurable: {
+			thread_id: 42,
+		},
+	},
+);
 console.log(finalState.messages[finalState.messages.length - 1].content);
 
-const nextState = await app.invoke({
-	// Including the messages from the previous run gives the LLM context.
-	// This way it knows we're asking about the weather in NY
-	messages: [...finalState.messages, new HumanMessage("what about ny")],
-});
+const nextState = await app.invoke(
+	{
+		// Including the messages from the previous run gives the LLM context.
+		// This way it knows we're asking about the weather in NY
+		messages: [...finalState.messages, new HumanMessage("what about ny")],
+	},
+	{
+		configurable: {
+			thread_id: 42,
+		},
+	},
+);
 console.log(nextState.messages[nextState.messages.length - 1].content);
