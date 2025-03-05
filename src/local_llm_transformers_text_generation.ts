@@ -1,7 +1,6 @@
 import {
 	type PipelineType,
 	type ProgressCallback,
-	type TextGenerationOutput,
 	type TextGenerationPipeline,
 	type TextGenerationSingle,
 	env,
