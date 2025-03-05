@@ -1,7 +1,7 @@
 import { HfInference } from "@huggingface/inference";
 
 const hf = process.env.HF;
-console.log("%c LOG hf", "background: #222; color: #bada55", hf);
+
 const client = new HfInference(hf);
 
 const chatCompletion = await client.chatCompletion({
